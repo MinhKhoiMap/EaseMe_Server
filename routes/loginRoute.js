@@ -2,9 +2,21 @@ const { Router } = require("express");
 const { StatusCodes } = require("http-status-codes");
 const jwt = require("jsonwebtoken");
 const UserModelClass = require("../DAL/models/usersModel");
+const authenticate = require("../middlewares/authenticate");
 
 const loginRoute = Router();
 const UserModel = new UserModelClass();
+
+loginRoute.get("/token", authenticate, (req, res) => {
+  let user_id = req.user._id;
+  UserModel.getUserById(user_id)
+    .then((user) => {
+      res
+        .status(StatusCodes.OK)
+        .json({ user, message: "Authentication successful" });
+    })
+    .catch((err) => console.log(err, "error at login with token"));
+});
 
 loginRoute.post("", (req, res) => {
   let { username, password } = req.body;
