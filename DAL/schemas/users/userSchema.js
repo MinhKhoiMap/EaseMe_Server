@@ -11,7 +11,7 @@ const userSchema = new Schema({
   },
   name: String,
   join_date: {
-    type: Date,
+    type: String,
     required: true,
   },
   avatar_url: String,

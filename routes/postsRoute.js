@@ -1,15 +1,38 @@
 const { Router } = require("express");
 const { StatusCodes } = require("http-status-codes");
 const PostModelClass = require("../DAL/models/postModel");
+const UserModelClass = require("../DAL/models/usersModel");
+const { handlePrivacyPost } = require("../utils/handlePrivacyPost");
+
+const multer = require("multer");
+const { getStorage, ref, getDownloadURL } = require("firebase/storage");
+const firebaseApp = require("../DAL/firebase.config");
 
 const postsRouter = Router();
 const PostModel = new PostModelClass();
+const UserModel = new UserModelClass();
+
+const uploadHandler = multer();
+const firebaseStorage = getStorage(firebaseApp);
 
 /*------------------ Get All Posts --------------------*/
-postsRouter.get("/all-posts", (req, res) => {
-  PostModel.getAllPosts().then((response) => {
-    res.status(StatusCodes.OK).json(response);
-  });
+postsRouter.get("/all-posts", async (req, res) => {
+  PostModel.getAllPublicPosts()
+    .then((posts) => {
+      let newPosts = [];
+      posts.forEach((post, index) => {
+        // console.log("first", index);
+        let ref = handlePrivacyPost(post._doc);
+        // console.log("end", index);
+        newPosts.push(ref);
+      });
+      return newPosts;
+    })
+    .then((posts) => {
+      res
+        .status(StatusCodes.OK)
+        .json({ message: "get all posts successfully", posts });
+    });
 });
 
 /*------------------ Get Post By ID Post --------------------*/
@@ -31,7 +54,7 @@ postsRouter.get("/my-posts", (req, res) => {
 
   PostModel.getUserPosts(userID)
     .then((posts) => {
-      // console.log(posts, "user post");
+      console.log(posts, "user post");
       res
         .status(StatusCodes.OK)
         .json({ posts: posts, message: "get user posts successfully" });
@@ -41,12 +64,24 @@ postsRouter.get("/my-posts", (req, res) => {
     });
 });
 
-/*------------------ Get Posts By TAG Id --------------------*/
-postsRouter.get("/tags/:tag", (req, res) => {
+/*------------------ Get Posts By TAG ID --------------------*/
+postsRouter.get("/tag/:tag", (req, res) => {
   let id_tag = req.params.tag;
 
-  PostModel.getAllPostsWithTag(id_tag)
-    .then((post) => res.status(StatusCodes.OK).json({ post }))
+  PostModel.getAllPublicPostsWithTag(id_tag)
+    .then((posts) => {
+      let newPosts = [];
+      for (let i = 0; i < posts.length; i++)
+        newPosts.push(handlePrivacyPost(posts[i]._doc));
+
+      return newPosts;
+    })
+    .then((posts) => {
+      // console.log(posts, "haizz");
+      res
+        .status(StatusCodes.OK)
+        .json({ message: "get post successfully", posts });
+    })
     .catch((e) => console.log(e, "err at tag post"));
 });
 
@@ -56,17 +91,22 @@ postsRouter.post("/create-post", (req, res) => {
   // console.log(post, "post");
 
   post.user = req.user._id;
-
+  post.postDate = new Date().toLocaleString();
   PostModel.createPost(post)
     .then((response) => {
       // console.log(response, "res o inserting post");
-      res.status(StatusCodes.CREATED).json({ message: "posting successfully" });
+      return PostModel.getPostById(response._id);
+    })
+    .then((post) => {
+      res
+        .status(StatusCodes.CREATED)
+        .json({ message: "posting successfully", post });
     })
     .catch((e) => console.log(e, "at inserting post"));
 });
 
 /*------------------ Edit post --------------------*/
-postsRouter.patch("/edit-post/:postID", (req, res) => {
+postsRouter.put("/edit-post/:postID", (req, res) => {
   let postID = req.params.postID;
   let post = req.body;
 

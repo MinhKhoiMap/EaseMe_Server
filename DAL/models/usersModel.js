@@ -12,8 +12,8 @@ class UserModelClass {
 
   getUserById(id_user) {
     return this.model
-      .findById(id_user)
-      .populate({ path: "details", select: "-_id" });
+      .findById(id_user, "-username -password")
+      .populate({ path: "details", select: "-_id -__v" });
   }
 
   getUsername(username) {
@@ -46,11 +46,18 @@ class UserModelClass {
   }
 
   updateUserProfile(userID, profile) {
-    return this.model.findByIdAndUpdate(
-      userID,
-      { ...profile },
-      { overwrite: false, returnDocument: "after" }
-    );
+    console.log(userID, profile);
+    return this.model
+      .findByIdAndUpdate(
+        userID,
+        { ...profile },
+        {
+          overwrite: false,
+          returnDocument: "after",
+          select: "-username -password",
+        }
+      )
+      .populate("details", "-_id -__v");
   }
 
   deleteUser(id_user) {

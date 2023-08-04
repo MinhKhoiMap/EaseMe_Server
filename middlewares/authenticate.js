@@ -10,14 +10,13 @@ const authenticate = (req, res, next) => {
   try {
     const token = jwt.verify(authorization, secretKey);
 
-    console.log(token, "authorization");
+    // console.log(token, "authorization");
 
     UserModel.getUserById(token.id_user)
       .then((response) => {
         // console.log(response, "authenticated");
         if (response._id.toString() === token.id_user) {
           req.user = response;
-          console.log(req.user);
           next();
         } else {
           res

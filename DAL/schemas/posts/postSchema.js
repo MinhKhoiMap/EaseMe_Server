@@ -8,9 +8,15 @@ const postSchema = new Schema({
   user: {
     type: Schema.Types.ObjectId,
     required: true,
+    ref: "users",
+  
   },
   reaction_number: Number,
   privacy: {
+    type: String,
+    required: true,
+  },
+  postDate: {
     type: String,
     required: true,
   },

@@ -8,20 +8,26 @@ class PostModelClass {
     this.tag = mongoose.model("tags", tagsSchema);
   }
 
-  getAllPosts() {
-    return this.model.find();
+  getAllPublicPosts() {
+    return this.model
+      .find({ privacy: "Public" })
+      .populate("tag", "-__v")
+      .populate("user", "name avatar_url role details");
   }
 
   getUserPosts(id_user) {
-    return this.model.find({ user: id_user }).populate("tag");
+    return this.model.find({ user: id_user }).populate("tag", "-__v");
   }
 
   getPostById(id) {
     return this.model.findById(id).populate("tag");
   }
 
-  getAllPostsWithTag(id_tag) {
-    return this.model.find({ id_tag });
+  getAllPublicPostsWithTag(id_tag) {
+    return this.model
+      .find({ tag: id_tag, privacy: "Public" }, "-__v")
+      .populate("tag", "-__v")
+      .populate("user", "name avatar_url role");
   }
 
   createPost(post) {

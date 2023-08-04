@@ -41,6 +41,7 @@ usersRoute.get("/:id", (req, res) => {
 /*------------------ Create a new user --------------------*/
 usersRoute.post("/create-user", checkingUser, (req, res) => {
   let profile = req.body;
+  profile.join_date = new Date().toLocaleDateString();
 
   UserModel.createUser(profile)
     .then((response) => {
@@ -52,11 +53,15 @@ usersRoute.post("/create-user", checkingUser, (req, res) => {
 
 /*------------------ Update user profile --------------------*/
 usersRoute.put("/update-profile", authenticate, (req, res) => {
-  let userID = req.user.id_user;
+  let userID = req.user._id;
   let profile = req.body;
+
+  console.log(profile, "profile");
 
   UserModel.updateUserProfile(userID, profile)
     .then((response) => {
+      console.log(response, "profile updated");
+
       res
         .status(StatusCodes.OK)
         .json({ profile: response, message: "updated profile successfully" });
@@ -99,6 +104,7 @@ usersRoute.post(
         result.cropped_image_path = downloadURL;
       });
 
+    // Update Image URL to database
     UserModel.updateUserProfile(userID, {
       [`${field}_url`]: result.cropped_image_path,
       [`${field}_full_url`]: result.full_image_path,
