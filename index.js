@@ -2,16 +2,17 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 
-// Define Routes
+// Import Routes
 const postsRouter = require("./routes/postsRoute");
 const usersRouter = require("./routes/usersRoute");
 const tagsRouter = require("./routes/tagsRoute");
 const commentsRouter = require("./routes/commentsRoute");
 const logiRouter = require("./routes/loginRoute");
 
-// Define middleware
+// Import middleware
 const authenticate = require("./middlewares/authenticate");
 
+// Import database services
 const DatabaseClass = require("./DAL/database");
 
 const app = express();
@@ -20,8 +21,8 @@ const database = new DatabaseClass(process.env.DATABASE_URL);
 app.use(express.json());
 app.use(cors());
 
-// Use Routes
-app.use("/api/posts", authenticate, postsRouter);
+// Define Routes
+app.use("/api/posts", postsRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/tags", tagsRouter);
 app.use("/api/comments", commentsRouter);

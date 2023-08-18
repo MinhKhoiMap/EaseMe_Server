@@ -10,7 +10,7 @@ class PostModelClass {
 
   getAllPublicPosts() {
     return this.model
-      .find({ privacy: "Public" })
+      .find({ privacy: "Public" }, "-__v")
       .populate("tag", "-__v")
       .populate("user", "name avatar_url role details");
   }
@@ -40,6 +40,21 @@ class PostModelClass {
       { ...post },
       { overwrite: false, returnDocument: "after" }
     );
+  }
+
+  async updateLikeList(id_post, id_user) {
+    const post = await this.model.findOne({ _id: id_post });
+    // console.log(post);
+    if (post.listUserLike.includes(id_user)) {
+      post.listUserLike = post.listUserLike.filter(
+        (user) => String(user) != String(id_user)
+      );
+    } else {
+      post.listUserLike.push(id_user);
+    }
+    // console.log(post, "after all");
+    post.reaction_number = post.listUserLike?.length || 0;
+    return post.save();
   }
 
   deletePost(id_post) {

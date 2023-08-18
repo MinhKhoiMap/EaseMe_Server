@@ -33,20 +33,21 @@ class UserModelClass {
       .catch((err) => console.log(err, "error at create role"));
   }
 
-  createUser(userProfile) {
-    return this.createRole(userProfile.role)
+  async createUser(userProfile) {
+    await this.createRole(userProfile.role)
       .then((response) => {
-        // console.log(response, "ehehe");
+        console.log(response, "ehehe");
         userProfile.details = response._id;
-        return this.model.create(userProfile);
       })
       .catch((err) => {
         console.log("error at create user", err);
       });
+
+    return this.model.create(userProfile);
   }
 
   updateUserProfile(userID, profile) {
-    console.log(userID, profile);
+    // console.log(userID, profile);
     return this.model
       .findByIdAndUpdate(
         userID,

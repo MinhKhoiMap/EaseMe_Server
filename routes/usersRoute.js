@@ -19,6 +19,7 @@ const UserModel = new UserModelClass();
 
 const uploadHandler = multer();
 const firebaseStorage = getStorage(firebaseApp);
+const metadataUpload = { contentType: "image/webp" };
 
 /*------------------ Get Psychologists by ID --------------------*/
 usersRoute.get("/:id", (req, res) => {
@@ -39,28 +40,80 @@ usersRoute.get("/:id", (req, res) => {
 });
 
 /*------------------ Create a new user --------------------*/
-usersRoute.post("/create-user", checkingUser, (req, res) => {
-  let profile = req.body;
-  profile.join_date = new Date().toLocaleDateString();
+usersRoute.post(
+  "/create-user",
+  checkingUser,
+  uploadHandler.any(),
+  async (req, res) => {
+    const imageFiles = req.files;
+    console.log(imageFiles, "image files");
+    let userProfile, fullImageRef, croppedImageRef;
+    let profile = req.body;
+    profile.join_date = new Date().toLocaleDateString();
+    profile.role = "clients";
 
-  UserModel.createUser(profile)
-    .then((response) => {
-      // console.log("resone create user", response);
-      res.status(StatusCodes.OK).json({ message: "User created successfully" });
+    await UserModel.createUser(profile)
+      .then((response) => {
+        console.log("resone create user", response);
+        userProfile = response;
+        if (imageFiles && imageFiles.length > 0) {
+          fullImageRef = ref(
+            firebaseStorage,
+            `upload/users/${response._id}/avatar/full_image`
+          );
+          croppedImageRef = ref(
+            firebaseStorage,
+            `upload/users/${response._id}/avatar/cropped_image`
+          );
+        } else {
+          res.status(StatusCodes.OK).json({ profile: response });
+        }
+      })
+      .catch((err) => {
+        console.log(err, "Error creating user");
+        res
+          .status(StatusCodes.BAD_GATEWAY)
+          .json({ message: `Error is ${err.message}` });
+      });
+
+    await uploadBytes(fullImageRef, imageFiles[0].buffer, metadataUpload)
+      .then((snapshot) => getDownloadURL(snapshot.ref))
+      .then((downloadURL) => {
+        userProfile.full_image_path = downloadURL;
+      })
+      .then(() =>
+        uploadBytes(croppedImageRef, imageFiles[1].buffer, metadataUpload)
+      )
+      .then((snapshot) => getDownloadURL(snapshot.ref))
+      .then((downloadURL) => {
+        userProfile.cropped_image_path = downloadURL;
+      });
+
+    UserModel.updateUserProfile(userProfile._id, {
+      avatar_url: userProfile.cropped_image_path,
+      avatar_full_url: userProfile.full_image_path,
     })
-    .catch((err) => console.log(err, "Error creating user"));
-});
+      .then((response) => {
+        res.status(StatusCodes.OK).json({ profile: response });
+      })
+      .catch((err) => {
+        res
+          .status(StatusCodes.INTERNAL_SERVER_ERROR)
+          .json({ message: `Error is ${err.message}` });
+      });
+  }
+);
 
 /*------------------ Update user profile --------------------*/
 usersRoute.put("/update-profile", authenticate, (req, res) => {
   let userID = req.user._id;
   let profile = req.body;
 
-  console.log(profile, "profile");
+  // console.log(profile, "profile");
 
   UserModel.updateUserProfile(userID, profile)
     .then((response) => {
-      console.log(response, "profile updated");
+      // console.log(response, "profile updated");
 
       res
         .status(StatusCodes.OK)
@@ -88,17 +141,18 @@ usersRoute.post(
       firebaseStorage,
       `upload/users/${userID}/${field}/cropped_image`
     );
-    const metadata = { contentType: "image/webp" };
 
     const result = {}; // an object result with cropped image and full image
 
     // Upload images to the firebase server
-    await uploadBytes(fullImageRef, imageFiles[0].buffer, metadata)
+    await uploadBytes(fullImageRef, imageFiles[0].buffer, metadataUpload)
       .then((snapshot) => getDownloadURL(snapshot.ref))
       .then((downloadURL) => {
         result.full_image_path = downloadURL;
       })
-      .then(() => uploadBytes(croppedImageRef, imageFiles[1].buffer, metadata))
+      .then(() =>
+        uploadBytes(croppedImageRef, imageFiles[1].buffer, metadataUpload)
+      )
       .then((snapshot) => getDownloadURL(snapshot.ref))
       .then((downloadURL) => {
         result.cropped_image_path = downloadURL;
@@ -109,7 +163,7 @@ usersRoute.post(
       [`${field}_url`]: result.cropped_image_path,
       [`${field}_full_url`]: result.full_image_path,
     }).then((response) => {
-      res.status(200).json({ profile: response });
+      res.status(StatusCodes.OK).json({ profile: response });
     });
   }
 );
@@ -120,7 +174,7 @@ usersRoute.delete("/delete-user", authenticate, (req, res) => {
 
   UserModel.deleteUser(id_user)
     .then((response) => {
-      console.log(response, "delete user successfully");
+      // console.log(response, "delete user successfully");
       res.status(StatusCodes.OK).json({ message: "deleted user successfully" });
     })
     .catch((err) => {

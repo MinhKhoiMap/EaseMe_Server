@@ -7,6 +7,7 @@ const UserModel = new UserModelClass();
 
 const authenticate = (req, res, next) => {
   const { authorization } = req.headers;
+  // console.log(authorization, "authorization");
   try {
     const token = jwt.verify(authorization, secretKey);
 

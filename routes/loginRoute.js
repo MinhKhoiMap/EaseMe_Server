@@ -23,27 +23,44 @@ loginRoute.post("", (req, res) => {
 
   UserModel.getUsername(username)
     .then((user) => {
-      console.log(user, "at login route");
-      if (user[0].password === password) {
+      // console.log({ user }, "at login route");
+      if (user.length > 0) {
+        if (user[0].password === password) {
+          // console.log("vai ca lit", password);
+          return UserModel.getUserById(user[0]._id);
+        } else {
+          // res
+          //   .status(StatusCodes.UNAUTHORIZED)
+          //   .json({ message: "Invalid password or username" });
+
+          return Promise.reject({
+            status: StatusCodes.UNAUTHORIZED,
+            message: "Invalid password or username",
+          });
+        }
+      } else {
+        return Promise.reject({
+          status: StatusCodes.NOT_FOUND,
+          message: "Username doest not exist",
+        });
+      }
+    })
+    .then((userProfile) => {
+      if (userProfile) {
         const token = jwt.sign(
-          { id_user: user[0]._id },
+          { id_user: userProfile._id },
           process.env.SECRET_KEY
         );
-
-        console.log(token);
-
-        res
-          .status(StatusCodes.OK)
-          .json({ user_profile: user, access_token: token });
-      } else {
-        res
-          .status(StatusCodes.UNAUTHORIZED)
-          .json({ message: "Invalid password or username" });
+        res.status(StatusCodes.OK).json({
+          message: "Login successfully",
+          user_profile: userProfile,
+          access_token: token,
+        });
       }
     })
     .catch((err) => {
       console.log("error at login route", err);
-      res.status(StatusCodes.BAD_GATEWAY).json({ message: "Error at login" });
+      res.status(err.status).json({ message: err.message });
     });
 });
 

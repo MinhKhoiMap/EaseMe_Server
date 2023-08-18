@@ -3,6 +3,8 @@ const { StatusCodes } = require("http-status-codes");
 const PostModelClass = require("../DAL/models/postModel");
 const UserModelClass = require("../DAL/models/usersModel");
 const { handlePrivacyPost } = require("../utils/handlePrivacyPost");
+const { getUserIDFromToken } = require("../utils/verifyToken");
+const authenticate = require("../middlewares/authenticate");
 
 const multer = require("multer");
 const { getStorage, ref, getDownloadURL } = require("firebase/storage");
@@ -17,12 +19,13 @@ const firebaseStorage = getStorage(firebaseApp);
 
 /*------------------ Get All Posts --------------------*/
 postsRouter.get("/all-posts", async (req, res) => {
+  const userID = getUserIDFromToken(req.headers.authorization);
   PostModel.getAllPublicPosts()
     .then((posts) => {
-      let newPosts = [];
+      const newPosts = [];
       posts.forEach((post, index) => {
         // console.log("first", index);
-        let ref = handlePrivacyPost(post._doc);
+        let ref = handlePrivacyPost(post._doc, userID);
         // console.log("end", index);
         newPosts.push(ref);
       });
@@ -49,12 +52,24 @@ postsRouter.get("/post/:post", (req, res) => {
 
 /*------------------ Get User Post--------------------*/
 
-postsRouter.get("/my-posts", (req, res) => {
+postsRouter.get("/my-posts", authenticate, (req, res) => {
   let userID = req.user._id;
 
   PostModel.getUserPosts(userID)
     .then((posts) => {
-      console.log(posts, "user post");
+      const newPosts = [];
+      posts.forEach((post, index) => {
+        // console.log("first", index);
+        if (post.listUserLike.includes(userID)) {
+          post._doc.isReacted = true;
+        }
+        // console.log("end", index);
+        newPosts.push(post);
+      });
+      return newPosts;
+    })
+    .then((posts) => {
+      // console.log(posts, "user post");
       res
         .status(StatusCodes.OK)
         .json({ posts: posts, message: "get user posts successfully" });
@@ -67,12 +82,13 @@ postsRouter.get("/my-posts", (req, res) => {
 /*------------------ Get Posts By TAG ID --------------------*/
 postsRouter.get("/tag/:tag", (req, res) => {
   let id_tag = req.params.tag;
+  const userID = getUserIDFromToken(req.headers.authorization);
 
   PostModel.getAllPublicPostsWithTag(id_tag)
     .then((posts) => {
       let newPosts = [];
       for (let i = 0; i < posts.length; i++)
-        newPosts.push(handlePrivacyPost(posts[i]._doc));
+        newPosts.push(handlePrivacyPost(posts[i]._doc, userID));
 
       return newPosts;
     })
@@ -86,7 +102,7 @@ postsRouter.get("/tag/:tag", (req, res) => {
 });
 
 /*------------------ Create a new Post --------------------*/
-postsRouter.post("/create-post", (req, res) => {
+postsRouter.post("/create-post", authenticate, (req, res) => {
   let post = req.body;
   // console.log(post, "post");
 
@@ -106,7 +122,7 @@ postsRouter.post("/create-post", (req, res) => {
 });
 
 /*------------------ Edit post --------------------*/
-postsRouter.put("/edit-post/:postID", (req, res) => {
+postsRouter.put("/edit-post/:postID", authenticate, (req, res) => {
   let postID = req.params.postID;
   let post = req.body;
 
@@ -124,13 +140,36 @@ postsRouter.put("/edit-post/:postID", (req, res) => {
     });
 });
 
+/*------------------ Like post --------------------*/
+postsRouter.put("/like-post/:postID", authenticate, (req, res) => {
+  let postID = req.params.postID;
+  let userID = req.user._id;
+
+  PostModel.updateLikeList(postID, userID).then((response) => {
+    // console.log("response like list", { ...response });
+    if (response.listUserLike.includes(userID)) {
+      response._doc.isReacted = true;
+      res.status(StatusCodes.OK).json({
+        message: "reaction is successfully",
+        posts: response,
+      });
+    } else {
+      response._doc.isReacted = false;
+      res.status(StatusCodes.OK).json({
+        message: "reaction is successfully",
+        posts: response,
+      });
+    }
+  });
+});
+
 /*------------------ Delete post --------------------*/
-postsRouter.delete("/delete-post/:postID", (req, res) => {
+postsRouter.delete("/delete-post/:postID", authenticate, (req, res) => {
   let postID = req.params.postID;
 
   PostModel.deletePost(postID)
     .then((response) => {
-      console.log(response, "delete post");
+      // console.log(response, "delete post");
       res
         .status(StatusCodes.OK)
         .json({ message: "delete post successfully", postDeleted: response });

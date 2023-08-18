@@ -9,7 +9,10 @@ const userSchema = new Schema({
     type: String,
     required: true,
   },
-  name: String,
+  name: {
+    type: String,
+    required: true,
+  },
   join_date: {
     type: String,
     required: true,

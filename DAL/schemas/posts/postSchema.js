@@ -5,11 +5,14 @@ const postSchema = new Schema({
     type: String,
     required: true,
   },
+  contentText: {
+    type: String,
+    required: true,
+  },
   user: {
     type: Schema.Types.ObjectId,
     required: true,
     ref: "users",
-  
   },
   reaction_number: Number,
   privacy: {
@@ -26,6 +29,7 @@ const postSchema = new Schema({
     ref: "tags",
     required: true,
   },
+  listUserLike: Array,
 });
 
 module.exports = postSchema;
