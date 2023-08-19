@@ -29,16 +29,16 @@ app.use("/api/comments", commentsRouter);
 app.use("/api/login", logiRouter);
 
 // Start the server
-app.listen(3002, () => {
-  console.log("App is listening");
-  database
-    .connect()
-    .then(() => {
-      console.log("Database is connected");
-    })
-    .catch((err) => {
-      console.log("Connect have interrupted", err);
-    });
-});
+// app.listen(3002, () => {
+//   console.log("App is listening");
+//   database
+//     .connect()
+//     .then(() => {
+//       console.log("Database is connected");
+//     })
+//     .catch((err) => {
+//       console.log("Connect have interrupted", err);
+//     });
+// });
 
 module.exports = app;
