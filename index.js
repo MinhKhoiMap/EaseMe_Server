@@ -8,6 +8,7 @@ const usersRouter = require("./routes/usersRoute");
 const tagsRouter = require("./routes/tagsRoute");
 const commentsRouter = require("./routes/commentsRoute");
 const logiRouter = require("./routes/loginRoute");
+const testRouter = require("./routes/testRoute");
 
 // Import middleware
 const authenticate = require("./middlewares/authenticate");
@@ -27,6 +28,7 @@ app.use("/routes/users", usersRouter);
 app.use("/routes/tags", tagsRouter);
 app.use("/routes/comments", commentsRouter);
 app.use("/routes/login", logiRouter);
+app.use("/routes/test", testRouter);
 
 // Start the server
 app.listen(5000, () => {
