@@ -22,11 +22,11 @@ app.use(express.json());
 app.use(cors());
 
 // Define Routes
-app.use("/api/posts", postsRouter);
-app.use("/api/users", usersRouter);
-app.use("/api/tags", tagsRouter);
-app.use("/api/comments", commentsRouter);
-app.use("/api/login", logiRouter);
+app.use("/routes/posts", postsRouter);
+app.use("/routes/users", usersRouter);
+app.use("/routes/tags", tagsRouter);
+app.use("/routes/comments", commentsRouter);
+app.use("/routes/login", logiRouter);
 
 // Start the server
 app.listen(5000, () => {
