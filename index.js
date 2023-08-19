@@ -40,3 +40,5 @@ app.listen(3002, () => {
       console.log("Connect have interrupted", err);
     });
 });
+
+module.exports = app;
