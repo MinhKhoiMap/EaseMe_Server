@@ -29,7 +29,7 @@ app.use("/api/comments", commentsRouter);
 app.use("/api/login", logiRouter);
 
 // Start the server
-app.listen(3002, () => {
+app.listen(5000, () => {
   console.log("App is listening");
   database
     .connect()
