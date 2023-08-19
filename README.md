@@ -1,6 +1,4 @@
-DATABASE_URL = "mongodb+srv://helloiamkhoi:pmk21092003@easeme.gr9rokd.mongodb.net/EaseMe"
-
-# TOKEN_KEY
+DATABASE_URL = "mongodb+srv://helloiamkhoi:pmk21092003@easeme.gr9rokd.mongodb.net/EaseMe
 
 
 SECRET_KEY = EaseMeBorn16052023
