@@ -8,6 +8,7 @@ const usersRouter = require("./routes/usersRoute");
 const tagsRouter = require("./routes/tagsRoute");
 const commentsRouter = require("./routes/commentsRoute");
 const logiRouter = require("./routes/loginRoute");
+const testRouter = require("./routes/testRoute");
 
 // Import middleware
 const authenticate = require("./middlewares/authenticate");
@@ -22,14 +23,15 @@ app.use(express.json());
 app.use(cors());
 
 // Define Routes
-app.use("/api/posts", postsRouter);
-app.use("/api/users", usersRouter);
-app.use("/api/tags", tagsRouter);
-app.use("/api/comments", commentsRouter);
-app.use("/api/login", logiRouter);
+app.use("/routes/posts", postsRouter);
+app.use("/routes/users", usersRouter);
+app.use("/routes/tags", tagsRouter);
+app.use("/routes/comments", commentsRouter);
+app.use("/routes/login", logiRouter);
+app.use("/routes/test", testRouter);
 
 // Start the server
-app.listen(3002, () => {
+app.listen(5000, () => {
   console.log("App is listening");
   database
     .connect()
