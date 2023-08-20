@@ -3,18 +3,18 @@ const express = require("express");
 const cors = require("cors");
 
 // Import Routes
-const postsRouter = require("./routes/postsRoute");
-const usersRouter = require("./routes/usersRoute");
-const tagsRouter = require("./routes/tagsRoute");
-const commentsRouter = require("./routes/commentsRoute");
-const logiRouter = require("./routes/loginRoute");
-const testRouter = require("./routes/testRoute");
+const postsRouter = require("../routes/postsRoute");
+const usersRouter = require("../routes/usersRoute");
+const tagsRouter = require("../routes/tagsRoute");
+const commentsRouter = require("../routes/commentsRoute");
+const logiRouter = require("../routes/loginRoute");
+const testRouter = require("../routes/testRoute");
 
 // Import middleware
-const authenticate = require("./middlewares/authenticate");
+const authenticate = require("../middlewares/authenticate");
 
 // Import database services
-const DatabaseClass = require("./DAL/database");
+const DatabaseClass = require("../DAL/database");
 
 const app = express();
 const database = new DatabaseClass(process.env.DATABASE_URL);
