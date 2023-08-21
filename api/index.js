@@ -37,6 +37,7 @@ app.listen(5000, () => {
     .connect()
     .then(() => {
       console.log("Database is connected");
+      process.env.TEST = "hehe";
     })
     .catch((err) => {
       console.log("Connect have interrupted", err);
