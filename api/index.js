@@ -17,7 +17,7 @@ const authenticate = require("../middlewares/authenticate");
 const DatabaseClass = require("../DAL/database");
 
 const app = express();
-const database = new DatabaseClass(process.env.DATABASE_URL);
+const database = new DatabaseClass(process.env.MONGODB_URI);
 
 app.use(express.json());
 app.use(cors());
