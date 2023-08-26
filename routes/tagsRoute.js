@@ -7,7 +7,7 @@ const TagModel = new TagModelClass();
 
 tagRoute.get("/all", (req, res) => {
   TagModel.getAllTags().then((response) => {
-    console.log(response);
+    // console.log(response);
     res.status(StatusCodes.OK).json({ tags: response });
   });
 });

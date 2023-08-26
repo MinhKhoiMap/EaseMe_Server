@@ -7,7 +7,7 @@ class TagModelClass {
   }
 
   getAllTags() {
-    return this.model.find();
+    return this.model.find({});
   }
 }
 
